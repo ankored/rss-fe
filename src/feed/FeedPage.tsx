@@ -1,25 +1,25 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 
-import { Grid, Button, OutlinedInput } from '@mui/material';
+import { Grid } from '@mui/material';
 
 import { useAppSelector, useAppDispatch } from '../hooks';
 import { Feed, addFeed } from '../store/reducers/feeds';
 
-import FeedItem from './FeedItem';
+import FeedList from './FeedList';
+import Posts from './Posts';
 
 function FeedPage() {
 	const feeds: Array<Feed> = useAppSelector((state) => state.feeds.feeds);
 	const dispatch = useAppDispatch();
 
-	// Creating a new feed
-	const [newFeedInput, setNewFeedInput] = useState("");
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setNewFeedInput(event.target.value);
+	const [selected, setSelected] = useState("");
+
+	const handleAddFeed = (input: string) => {
+		// Dispatch a new feed added
+		dispatch(addFeed(input));
 	};
-	const handleNewFeed = () => {
-		dispatch(addFeed(newFeedInput));
-		setNewFeedInput("");
-	};
+
+	const selectedFeed = feeds.find(f => f.id == selected);
 
 	return (
 		<Grid container sx={{
@@ -27,26 +27,21 @@ function FeedPage() {
 			width: '100%',
 			height: '100vh',
 		}}>
-			{ /* The left side, should split this out */ }
+			{ /* The left side, TODO: Disappear on mobile breakpoints */}
 			<Grid item xs={3} sx={{
-				borderRight: '1px solid',
-				borderRightColor: 'primary.dark',
 				paddingTop: '2em',
 				paddingLeft: '1em',
 				paddingRight: '1em',
 			}}>
-				<OutlinedInput fullWidth placeholder="https://example.com/rss.xml" sx={{
-					bgcolor: 'secondary.main',
-					borderRadius: '32px',
-				}} onChange={handleChange} value={newFeedInput} />
-				<Grid container justifyContent="flex-end" sx={{
-					marginTop: '1em',
-				}}>
-					<Button variant="outlined" onClick={handleNewFeed}>Add Feed</Button>
-				</Grid>
-				{ feeds.map((f) => 
-					<FeedItem key={f.id} feed={f} />	
-				) }
+				<FeedList
+					feeds={feeds}
+					onSubmit={handleAddFeed}
+					selectedId={selected}
+					onSelect={(id: string) => setSelected(id)}
+				/>
+			</Grid>
+			<Grid item xs={9}>
+				<Posts selectedFeed={selectedFeed} />
 			</Grid>
 		</Grid>
 	);
